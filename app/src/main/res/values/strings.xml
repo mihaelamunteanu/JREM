@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">JuxtaREM</string>
+    <string name="action_share_task">Share</string>
+    <string name="action_see_profile">Profile</string>
+    <string name="action_use_points">Use Points</string>
+    <string name="action_see_snoozed_tasks">Snoozed Tasks</string>
+    <string name="action_settings">Settings</string>
+</resources>
