@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onLoadFinished(Loader<String> loader, String data) {
         //TODO add indicator and error message
         try {
-            taskTextView.setText((String)JsonUtils.getTaskValuesFromJson(data).get("taskDetail"));
+            taskTextView.setText((String)JsonUtils.getTaskValuesFromJson(data).get("task"));
         } catch (JSONException e) {
             e.printStackTrace();
         }
