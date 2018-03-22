@@ -1,5 +1,6 @@
 package com.juxtarem.android.juxtarem;
 
+import android.content.Intent;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
@@ -29,12 +30,18 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private TextView taskTextView;
     private Button taskButton;
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //TODO check if user is connected; initially we consider he is not
+        if (true) {
+            Intent intent = new Intent(this,  LoginActivity.class);
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                startActivity(intent);
+            }
+        }
 
         taskButton = (Button) findViewById(R.id.task_button);
         taskButton.setOnClickListener(new View.OnClickListener() {
@@ -108,6 +115,26 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 } catch (IOException e) {
                     e.printStackTrace();
                     return null;
+                }
+            }
+
+            @Override
+            protected void onReset() {
+                super.onReset();
+                                /* If no arguments were passed, we don't have a query to perform. Simply return. */
+                if (args == null) {
+                    return;
+                }
+
+                /*
+                 * If taskResult is not null, deliver that result. Otherwise, force a load
+                 * If we already have cached results, just deliver them now. If we don't have any
+                 * cached results, force a load.
+                 */
+                if (taskResult != null) {
+                    deliverResult(taskResult);
+                } else {
+                    forceLoad();
                 }
             }
 

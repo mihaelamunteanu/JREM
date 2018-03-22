@@ -10,4 +10,7 @@
     <string name="input_email">Email</string>
     <string name="create_new_account">No account yet? Create one</string>
     <string name="action_login">Login</string>
+    <string name="delimiter">Delimiter</string>
+    <string name="gplus_sign_in">Sign in with Google+</string>
+    <string name="action_see_signout_tasks">Sign out</string>
 </resources>

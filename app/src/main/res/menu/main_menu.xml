@@ -29,4 +29,9 @@
         android:orderInCategory="100"
         android:title="@string/action_see_snoozed_tasks"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_signout_tasks"
+        android:orderInCategory="100"
+        android:title="@string/action_see_signout_tasks"
+        app:showAsAction="never" />
 </menu>
