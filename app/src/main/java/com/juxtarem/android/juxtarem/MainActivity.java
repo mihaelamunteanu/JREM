@@ -9,12 +9,11 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.juxtarem.android.juxtarem.utilities.JsonUtils;
+import com.juxtarem.android.juxtarem.utilities.json.JSONUtils;
 import com.juxtarem.android.juxtarem.utilities.NetworkUtils;
 
 import org.json.JSONException;
@@ -150,7 +149,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onLoadFinished(Loader<String> loader, String data) {
         //TODO add indicator and error message
         try {
-            taskTextView.setText((String)JsonUtils.getTaskValuesFromJson(data).get("task"));
+            taskTextView.setText((String)JSONUtils.getTaskValuesFromJson(data).get("task"));
         } catch (JSONException e) {
             e.printStackTrace();
         }

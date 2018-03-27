@@ -1,13 +1,7 @@
 package com.juxtarem.android.juxtarem.utilities;
 
 import android.net.Uri;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.message.BasicNameValuePair;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -34,7 +28,7 @@ public class NetworkUtils {
     final static String USERS = "users";
     final static String USER = "user";
 
-    final static String NEW = "new";
+    final static String CREATE_USER = "createuser";
     /**
      * Builds the URL used to get a task.
      *
@@ -50,34 +44,16 @@ public class NetworkUtils {
     }
 
     /**
-     * Builds the URL used to create a new account.
+     * Builds the URL used to get a task.
      *
-     * @param name The user to get a task for.
-     * @param mail The user to get a task for.
-     * @param password The user to get a task for.
      * @return The URL to use to query the server.
      */
-    public static URL buildCreateAccountUrl(String name, String mail, String password) {
-        byte[] passBase64 = android.util.Base64.encode(password.getBytes(), 1);
+    public static URL buildPostRequestCreateUserUrl() {
         Uri builtUri = Uri.parse(JUXTAREM_BASE_URL).buildUpon()
-                .appendPath("createuser")
-                .appendPath(String.valueOf(name))
-                .appendPath(String.valueOf(mail))
-                .appendPath(String.valueOf(passBase64))
+                .appendPath(CREATE_USER)
                 .build();
 
         return buildUrlFromUri(builtUri, 0);
-    }
-
-    private static URL buildUrlFromUri(Uri uri, int lastTaskId) {
-        URL url = null;
-        try {
-            url = new URL(uri.toString());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-
-        return url;
     }
 
     /**
@@ -140,6 +116,7 @@ public class NetworkUtils {
 
     public static String getResponseForPostSignUpRequest(URL url, String urlParameters) {
         try {
+            //TODO refactor to generalize it better and use OkHttp
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
             //TODO see what to replace the user agent and make sure it does not open new threads
@@ -149,6 +126,9 @@ public class NetworkUtils {
             con.setRequestMethod("POST");
             con.setRequestProperty("User-Agent", USER_AGENT);
             con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+            con.setRequestProperty("Content-Type", "application/json");
+            con.setRequestProperty("http.protocol.expect-continue", "false");
+            con.setRequestProperty("charset", "utf-8");
 
             // Send post request
             con.setDoOutput(true);
@@ -172,9 +152,11 @@ public class NetworkUtils {
             }
             in.close();
 
+            Log.d(NetworkUtils.class.getCanonicalName(), response.toString());
             return response.toString();
 
             //TODO handle exceptions
+            //TODO close the in also when there is an error received, in the exceptions
         } catch (ProtocolException e) {
             e.printStackTrace();
         } catch (IOException e) {

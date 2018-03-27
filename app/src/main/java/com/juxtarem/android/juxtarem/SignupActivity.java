@@ -1,6 +1,7 @@
 package com.juxtarem.android.juxtarem;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
@@ -14,19 +15,18 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.juxtarem.android.juxtarem.utilities.JsonUtils;
 import com.juxtarem.android.juxtarem.utilities.NetworkUtils;
-
-import org.json.JSONException;
 
 import java.io.IOException;
 import java.net.URL;
-import java.sql.Types;
 
 public class SignupActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<String>  {
     private static final String TAG = "SignupActivity";
     private static final int SIGN_UP_TASK_LOADER = 101;
     private static final String SIGN_UP_URL = "SIGNUP_URL";
+    private static final String NAME = "name";
+    private static final String MAIL = "mail";
+    private static final String PASS = "pass";
 
     EditText _nameText;
     EditText _emailText;
@@ -70,11 +70,11 @@ public class SignupActivity extends AppCompatActivity implements LoaderManager.L
 
         _signupButton.setEnabled(false);
 
-//        final ProgressDialog progressDialog = new ProgressDialog(SignupActivity.this,
-//                R.style.Theme_AppCompat_Light_DarkActionBar);
-//        progressDialog.setIndeterminate(true);
-//        progressDialog.setMessage("Creating Account...");
-//        progressDialog.show();
+        final ProgressDialog progressDialog = new ProgressDialog(SignupActivity.this,
+                R.style.Theme_AppCompat_Light_DarkActionBar);
+        progressDialog.setIndeterminate(true);
+        progressDialog.setMessage("Creating Account...");
+        progressDialog.show();
 
         String name = _nameText.getText().toString();
         String email = _emailText.getText().toString();
@@ -84,6 +84,10 @@ public class SignupActivity extends AppCompatActivity implements LoaderManager.L
         URL newAccountCreationURL = NetworkUtils.buildCreateAccountUrl(name, email, password);
         Bundle taskBundle =  new Bundle();
         taskBundle.putString(SIGN_UP_URL, newAccountCreationURL.toString());
+        taskBundle.putString(NAME, name);
+        taskBundle.putString(MAIL, email);
+        taskBundle.putString(PASS, password);
+
 
         LoaderManager loaderManager = getSupportLoaderManager();
         Loader<String> taskLoader = loaderManager.getLoader(SIGN_UP_TASK_LOADER);
@@ -95,9 +99,12 @@ public class SignupActivity extends AppCompatActivity implements LoaderManager.L
     }
 
 
-    public void onSignupSuccess() {
+    public void onSignupSuccess(String data) {
         _signupButton.setEnabled(true);
-        setResult(RESULT_OK, null);
+
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("data", data);
+        setResult(RESULT_OK, resultIntent);
         finish();
     }
 
@@ -169,6 +176,7 @@ public class SignupActivity extends AppCompatActivity implements LoaderManager.L
                 if (singupResult != null) {
                     deliverResult(singupResult);
                 } else {
+                    //this else needs to stay here to force the load if it is not there
                     forceLoad();
                 }
             }
@@ -178,6 +186,10 @@ public class SignupActivity extends AppCompatActivity implements LoaderManager.L
 
                 /* Extract the url from the args using our constant */
                 String calledUrlString = args.getString(SIGN_UP_URL);
+                String name = args.getString(NAME);
+                String mail = args.getString(MAIL);
+                String pass = args.getString(PASS);
+
 
                 /* If the user didn't enter anything, there's nothing to search for */
                 if (calledUrlString == null || TextUtils.isEmpty(calledUrlString)) {
@@ -188,8 +200,8 @@ public class SignupActivity extends AppCompatActivity implements LoaderManager.L
                 try {
                     URL newAccountUrl = new URL(calledUrlString);
                     Log.d(this.getClass().getCanonicalName(), "Create new account url: " + newAccountUrl);
-                    String taskSearchResults = NetworkUtils.getResponseFromHttpUrl(newAccountUrl);
-                    return taskSearchResults;
+                    String singupResult = NetworkUtils.getResponseForPostSignUpRequest(NetworkUtils.buildPostRequestCreateUserUrl(),  "{\"message\":\"Hello\"}");
+                    return singupResult;
                 } catch (IOException e) {
                     e.printStackTrace();
                     return null;
@@ -210,6 +222,8 @@ public class SignupActivity extends AppCompatActivity implements LoaderManager.L
                  * cached results, force a load.
                  */
                 if (singupResult != null) {
+
+
                     deliverResult(singupResult);
                 } else {
                     forceLoad();
@@ -225,19 +239,17 @@ public class SignupActivity extends AppCompatActivity implements LoaderManager.L
     }
 
     @Override
-    public void onLoadFinished(Loader<String> loader, String data) {
-        //TODO add indicator and error message
-        new android.os.Handler().postDelayed(
-                new Runnable() {
-                    public void run() {
-                        // On complete call either onSignupSuccess or onSignupFailed
-                        // depending on success
-                        onSignupSuccess();
-                        // onSignupFailed();
-                        //TODO add progress dialog
-                        //progressDialog.dismiss();
-                    }
-                }, 3000);
+    public void onLoadFinished(Loader<String> loader,final String data) {
+
+        Toast.makeText(getBaseContext(), "Signup result" +  data, Toast.LENGTH_LONG).show();
+        Log.d(SignupActivity.class.getCanonicalName(), "SignUpResult: " + data);
+        // On complete call either onSignupSuccess or onSignupFailed
+        // depending on success
+        onSignupSuccess(data);
+        // onSignupFailed();
+        //TODO add progress dialog
+//        progressDialog.dismiss();
+
         // Finish the registration screen and return to the Login activity
         finish();
     }
