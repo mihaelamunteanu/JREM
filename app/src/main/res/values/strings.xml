@@ -13,4 +13,21 @@
     <string name="delimiter">Delimiter</string>
     <string name="gplus_sign_in">Sign in with Google+</string>
     <string name="action_see_signout_tasks">Sign out</string>
+
+    <string name="facebook_app_id">2102852096613774</string>
+    <string name="fb_login_protocol_scheme">fb2102852096613774</string>
+
+
+
+    <string name="welcome">Welcome!</string>
+    <string name="log_in_with_facebook">Log in with Facebook</string>
+    <string name="permissions">Permissions</string>
+    <string name="label_facebook_login">Facebook Login</string>
+    <string name="label_account_kit_login">Account Kit Login</string>
+    <string name="de_authorize_app">De-authorize App</string>
+    <string name="failed_to_deauth">"failed to deauthorize app %1s"</string>
+    <string name="app_not_logged_in">App not logged in</string>
+    <string name="success">SUCCESS</string>
+    <string name="cancel">CANCEL</string>
+    <string name="error">ERROR</string>
 </resources>

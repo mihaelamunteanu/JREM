@@ -13,6 +13,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.facebook.AccessToken;
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
+import com.facebook.login.LoginManager;
 import com.juxtarem.android.juxtarem.utilities.json.JSONUtils;
 import com.juxtarem.android.juxtarem.utilities.NetworkUtils;
 
@@ -20,6 +24,7 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<String> {
 
@@ -32,14 +37,18 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        AppEventsLogger.activateApp(this);
         setContentView(R.layout.activity_main);
-
         //TODO check if user is connected; initially we consider he is not
-        if (true) {
-            Intent intent = new Intent(this,  LoginActivity.class);
+        if (AccessToken.getCurrentAccessToken() == null) {
+//            Intent intent = new Intent(this,  LoginActivity.class);
+            Intent intent = new Intent(this,  FacebookLoginActivity.class);
             if (intent.resolveActivity(getPackageManager()) != null) {
                 startActivity(intent);
             }
+        } else {
+            LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("public_profile"));
         }
 
         taskButton = (Button) findViewById(R.id.task_button);

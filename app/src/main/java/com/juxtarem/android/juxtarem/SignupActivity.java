@@ -12,10 +12,12 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.juxtarem.android.juxtarem.utilities.NetworkUtils;
+import com.juxtarem.android.juxtarem.utilities.json.JsonBuilder;
 
 import java.io.IOException;
 import java.net.URL;
@@ -23,7 +25,6 @@ import java.net.URL;
 public class SignupActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<String>  {
     private static final String TAG = "SignupActivity";
     private static final int SIGN_UP_TASK_LOADER = 101;
-    private static final String SIGN_UP_URL = "SIGNUP_URL";
     private static final String NAME = "name";
     private static final String MAIL = "mail";
     private static final String PASS = "pass";
@@ -34,10 +35,13 @@ public class SignupActivity extends AppCompatActivity implements LoaderManager.L
     Button _signupButton;
     TextView _loginLink;
 
+    private ProgressBar _progressBar;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
+
         _nameText = findViewById(R.id.input_name);
         _emailText = findViewById(R.id.input_email);
         _passwordText = findViewById(R.id.input_password);
@@ -50,7 +54,6 @@ public class SignupActivity extends AppCompatActivity implements LoaderManager.L
                 signup();
             }
         });
-
         _loginLink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -58,23 +61,22 @@ public class SignupActivity extends AppCompatActivity implements LoaderManager.L
                 finish();
             }
         });
+
+        _progressBar = (ProgressBar) findViewById(R.id.pb_loading_indicator);
     }
 
     public void signup() {
         Log.d(TAG, "Signup");
 
         if (!validate()) {
-            onSignupFailed();
+            onSignupFailed("Validation failed");
             return;
         }
 
         _signupButton.setEnabled(false);
 
-        final ProgressDialog progressDialog = new ProgressDialog(SignupActivity.this,
-                R.style.Theme_AppCompat_Light_DarkActionBar);
-        progressDialog.setIndeterminate(true);
-        progressDialog.setMessage("Creating Account...");
-        progressDialog.show();
+        _progressBar.setVisibility(View.VISIBLE);
+        _progressBar.setIndeterminate(true);
 
         String name = _nameText.getText().toString();
         String email = _emailText.getText().toString();
@@ -83,7 +85,6 @@ public class SignupActivity extends AppCompatActivity implements LoaderManager.L
         //signup logic here.
         URL newAccountCreationURL = NetworkUtils.buildCreateAccountUrl(name, email, password);
         Bundle taskBundle =  new Bundle();
-        taskBundle.putString(SIGN_UP_URL, newAccountCreationURL.toString());
         taskBundle.putString(NAME, name);
         taskBundle.putString(MAIL, email);
         taskBundle.putString(PASS, password);
@@ -102,14 +103,15 @@ public class SignupActivity extends AppCompatActivity implements LoaderManager.L
     public void onSignupSuccess(String data) {
         _signupButton.setEnabled(true);
 
-        Intent resultIntent = new Intent();
-        resultIntent.putExtra("data", data);
-        setResult(RESULT_OK, resultIntent);
+        //Won't use the result as this means it worked if it got to this step
+//        Intent resultIntent = new Intent();
+//        resultIntent.putExtra("data", data);
+//        setResult(RESULT_OK, resultIntent);
         finish();
     }
 
-    public void onSignupFailed() {
-        Toast.makeText(getBaseContext(), "Signup failed", Toast.LENGTH_LONG).show();
+    public void onSignupFailed(String message) {
+        Toast.makeText(getBaseContext(), message, Toast.LENGTH_LONG).show();
 
         _signupButton.setEnabled(true);
     }
@@ -183,30 +185,22 @@ public class SignupActivity extends AppCompatActivity implements LoaderManager.L
 
             @Override
             public String loadInBackground() {
-
                 /* Extract the url from the args using our constant */
-                String calledUrlString = args.getString(SIGN_UP_URL);
                 String name = args.getString(NAME);
                 String mail = args.getString(MAIL);
                 String pass = args.getString(PASS);
 
-
                 /* If the user didn't enter anything, there's nothing to search for */
-                if (calledUrlString == null || TextUtils.isEmpty(calledUrlString)) {
+                if (mail == null || TextUtils.isEmpty(mail)) {
                     return null;
                 }
 
                 /* Parse the URL from the passed in String and perform the search */
-                try {
-                    URL newAccountUrl = new URL(calledUrlString);
-                    Log.d(this.getClass().getCanonicalName(), "Create new account url: " + newAccountUrl);
-                    String singupResult = NetworkUtils.getResponseForPostSignUpRequest(NetworkUtils.buildPostRequestCreateUserUrl(),  "{\"message\":\"Hello\"}");
-                    return singupResult;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    return null;
-                }
+                String singupResult = NetworkUtils.getResponseForPostSignUpRequest(NetworkUtils.buildPostRequestCreateUserUrl(),
+                       JsonBuilder.buildGetUserPointsResponse(name, mail, pass));
+                return singupResult;
             }
+
 
             @Override
             protected void onReset() {
@@ -222,8 +216,6 @@ public class SignupActivity extends AppCompatActivity implements LoaderManager.L
                  * cached results, force a load.
                  */
                 if (singupResult != null) {
-
-
                     deliverResult(singupResult);
                 } else {
                     forceLoad();
@@ -231,8 +223,8 @@ public class SignupActivity extends AppCompatActivity implements LoaderManager.L
             }
 
             @Override
-            public void deliverResult(String taskJson) {
-                singupResult = taskJson;
+            public void deliverResult(String cretedUserJson) {
+                singupResult = cretedUserJson;
                 super.deliverResult(singupResult);
             }
         };
@@ -241,17 +233,17 @@ public class SignupActivity extends AppCompatActivity implements LoaderManager.L
     @Override
     public void onLoadFinished(Loader<String> loader,final String data) {
 
-        Toast.makeText(getBaseContext(), "Signup result" +  data, Toast.LENGTH_LONG).show();
+        Toast.makeText(getBaseContext(), "Signup result " +  data, Toast.LENGTH_LONG).show();
         Log.d(SignupActivity.class.getCanonicalName(), "SignUpResult: " + data);
-        // On complete call either onSignupSuccess or onSignupFailed
-        // depending on success
-        onSignupSuccess(data);
-        // onSignupFailed();
-        //TODO add progress dialog
-//        progressDialog.dismiss();
 
-        // Finish the registration screen and return to the Login activity
-        finish();
+        _progressBar.setVisibility(View.INVISIBLE);
+        // On complete call either onSignupSuccess or onSignupFailed
+
+        if (data != null) {
+            onSignupSuccess(data);
+        } else {
+            onSignupFailed(data);
+        }
     }
 
     @Override

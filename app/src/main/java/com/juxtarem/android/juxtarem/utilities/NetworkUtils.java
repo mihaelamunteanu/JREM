@@ -18,6 +18,7 @@ import java.util.Scanner;
 
 /**
  * Created by mihaela on 3/1/2018.
+ *
  */
 
 public class NetworkUtils {
@@ -67,7 +68,7 @@ public class NetworkUtils {
     public static URL buildCreateAccountUrl(String name, String mail, String password) {
         byte[] passBase64 = android.util.Base64.encode(password.getBytes(), 1);
         Uri builtUri = Uri.parse(JUXTAREM_BASE_URL).buildUpon()
-                .appendPath("createuser")
+                .appendPath(CREATE_USER)
                 .appendPath(String.valueOf(name))
                 .appendPath(String.valueOf(mail))
                 .appendPath(String.valueOf(passBase64))
@@ -114,33 +115,39 @@ public class NetworkUtils {
         }
     }
 
+    private static HttpURLConnection createPostRequestConnection(URL url) throws IOException {
+        //TODO refactor to generalize it better and use OkHttp
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+
+        //TODO see what to replace the user agent and make sure it does not open new threads
+        String USER_AGENT = System.getProperty("http.agent");
+        //add reuqest header
+
+        con.setRequestMethod("POST");
+        con.setRequestProperty("User-Agent", USER_AGENT);
+        con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+        con.setRequestProperty("Content-Type", "application/json");
+        con.setRequestProperty("http.protocol.expect-continue", "false");
+        con.setRequestProperty("charset", "utf-8");
+
+        // Send post request
+        con.setDoOutput(true);
+
+        return con;
+    }
+
     public static String getResponseForPostSignUpRequest(URL url, String urlParameters) {
         try {
-            //TODO refactor to generalize it better and use OkHttp
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            HttpURLConnection con = createPostRequestConnection(url);
 
-            //TODO see what to replace the user agent and make sure it does not open new threads
-            String USER_AGENT = System.getProperty("http.agent");
-            //add reuqest header
-
-            con.setRequestMethod("POST");
-            con.setRequestProperty("User-Agent", USER_AGENT);
-            con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-            con.setRequestProperty("Content-Type", "application/json");
-            con.setRequestProperty("http.protocol.expect-continue", "false");
-            con.setRequestProperty("charset", "utf-8");
-
-            // Send post request
-            con.setDoOutput(true);
             DataOutputStream wr = new DataOutputStream(con.getOutputStream());
             wr.writeBytes(urlParameters);
             wr.flush();
             wr.close();
 
             int responseCode = con.getResponseCode();
-            System.out.println("\nSending 'POST' request to URL : " + url);
-            System.out.println("Post parameters : " + urlParameters);
-            System.out.println("Response Code : " + responseCode);
+            Log.i(NetworkUtils.class.getCanonicalName(), "\nSending 'POST' request to URL : " + url +
+                    " and parameters " + urlParameters + " and response code " + responseCode);
 
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(con.getInputStream()));
@@ -152,7 +159,7 @@ public class NetworkUtils {
             }
             in.close();
 
-            Log.d(NetworkUtils.class.getCanonicalName(), response.toString());
+            Log.i(NetworkUtils.class.getCanonicalName(), response.toString());
             return response.toString();
 
             //TODO handle exceptions

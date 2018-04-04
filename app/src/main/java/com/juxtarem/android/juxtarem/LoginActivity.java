@@ -12,6 +12,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
+
 public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LoginActivity";
     private static final int REQUEST_SIGNUP = 0;
@@ -21,9 +28,17 @@ public class LoginActivity extends AppCompatActivity {
     Button _loginButton;
     TextView _signupLink;
 
+    private LoginButton _facebookLoginButton;
+
+    private CallbackManager callbackManager;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        callbackManager = CallbackManager.Factory.create();
+
         setContentView(R.layout.activity_login);
         _emailText = findViewById(R.id.input_email);
         _passwordText = findViewById(R.id.input_password);
@@ -47,6 +62,7 @@ public class LoginActivity extends AppCompatActivity {
                 startActivityForResult(intent, REQUEST_SIGNUP);
             }
         });
+
     }
 
     public void login() {
@@ -86,10 +102,12 @@ public class LoginActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_SIGNUP) {
 
-                Toast.makeText(getBaseContext(), "Signed up. Login" + data.toString(), Toast.LENGTH_LONG).show();
+                Toast.makeText(getBaseContext(), "Signed up. Login" + data, Toast.LENGTH_LONG).show();
                 // TODO: Implement successful signup logic here
                 // By default we just finish the Activity and log them in automatically
                 this.finish();
+        } else if (FacebookSdk.isFacebookRequestCode(requestCode)) {
+            callbackManager.onActivityResult(requestCode, resultCode, data);
         }
     }
 
