@@ -9,14 +9,18 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
 import com.facebook.AccessToken;
 import com.facebook.FacebookSdk;
+import com.facebook.GraphRequest;
+import com.facebook.HttpMethod;
 import com.facebook.appevents.AppEventsLogger;
 import com.facebook.login.LoginManager;
+import com.juxtarem.android.juxtarem.utilities.Constants;
 import com.juxtarem.android.juxtarem.utilities.json.JSONUtils;
 import com.juxtarem.android.juxtarem.utilities.NetworkUtils;
 
@@ -37,8 +41,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        FacebookSdk.sdkInitialize(getApplicationContext());
-        AppEventsLogger.activateApp(this);
         setContentView(R.layout.activity_main);
         //TODO check if user is connected; initially we consider he is not
         if (AccessToken.getCurrentAccessToken() == null) {
@@ -184,5 +186,30 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         //String lost when a rotation is done
         String currentTaskDetails = taskTextView.getText().toString();
         outState.putString(TASK_TEXT, currentTaskDetails);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                // User chose the "Settings" item, show the app settings UI...
+                return true;
+
+            case R.id.action_share:
+                // User chose the "Favorite" action, mark the current item
+                // as a favorite...
+                return true;
+
+            case R.id.action_signout_tasks:
+                LoginManager.getInstance().logOut();
+                AccessToken.setCurrentAccessToken(null);
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
     }
 }

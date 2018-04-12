@@ -65,7 +65,6 @@ public class FacebookLoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        FacebookSdk.sdkInitialize(getApplicationContext());
         setContentView(R.layout.activity_facebook_login);
 
         callbackManager = CallbackManager.Factory.create();
@@ -84,6 +83,7 @@ public class FacebookLoginActivity extends AppCompatActivity {
             @Override
             public void onSuccess(LoginResult loginResult) {
                 // App code
+                finish();
             }
 
             @Override
