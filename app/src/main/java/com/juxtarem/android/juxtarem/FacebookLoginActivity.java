@@ -43,17 +43,13 @@ import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.facebook.login.widget.ProfilePictureView;
+import com.juxtarem.android.juxtarem.utilities.Commons;
 
 import org.json.JSONException;
 
 import java.util.Arrays;
 
 public class FacebookLoginActivity extends AppCompatActivity {
-
-    private static final String GRAPH_PATH = "me/permissions";
-    private static final String SUCCESS = "success";
-    private static final String EMAIL = "email";
-
     private static final int PICK_PERMS_REQUEST = 0;
 
     private CallbackManager callbackManager;
@@ -75,7 +71,7 @@ public class FacebookLoginActivity extends AppCompatActivity {
 
         userNameView = (TextView) findViewById(R.id.user_name);
 
-        fbLoginButton.setReadPermissions(Arrays.asList(EMAIL));
+        fbLoginButton.setReadPermissions(Arrays.asList(Commons.EMAIL));
         // If you are using in a fragment, call loginButton.setFragment(this);
 
         // Callback registration
@@ -107,29 +103,7 @@ public class FacebookLoginActivity extends AppCompatActivity {
                             Toast.LENGTH_LONG).show();
                     return;
                 }
-                GraphRequest.Callback callback = new GraphRequest.Callback() {
-                    @Override
-                    public void onCompleted(GraphResponse response) {
-                        try {
-                            if(response.getError() != null) {
-                                Toast.makeText(
-                                        FacebookLoginActivity.this,
-                                        getResources().getString(
-                                                R.string.failed_to_deauth,
-                                                response.toString()),
-                                        Toast.LENGTH_LONG
-                                ).show();
-                            }
-                            else if (response.getJSONObject().getBoolean(SUCCESS)) {
-                                LoginManager.getInstance().logOut();
-                                // updateUI();?
-                            }
-                        } catch (JSONException ex) { /* no op */ }
-                    }
-                };
-                GraphRequest request = new GraphRequest(AccessToken.getCurrentAccessToken(),
-                        GRAPH_PATH, new Bundle(), HttpMethod.DELETE, callback);
-                request.executeAsync();
+                Commons.facebookLogOut(FacebookLoginActivity.this);
             }
         });
 

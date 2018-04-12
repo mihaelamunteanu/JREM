@@ -35,5 +35,6 @@ public class Constants {
     public static final String NAME = "name";
     public static final String PASS = "pass";
 
-    public static final String GRAPH_PATH = "me/permissions";
+
+
 }

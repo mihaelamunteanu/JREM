@@ -20,6 +20,7 @@ import com.facebook.GraphRequest;
 import com.facebook.HttpMethod;
 import com.facebook.appevents.AppEventsLogger;
 import com.facebook.login.LoginManager;
+import com.juxtarem.android.juxtarem.utilities.Commons;
 import com.juxtarem.android.juxtarem.utilities.Constants;
 import com.juxtarem.android.juxtarem.utilities.json.JSONUtils;
 import com.juxtarem.android.juxtarem.utilities.NetworkUtils;
@@ -201,8 +202,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 return true;
 
             case R.id.action_signout_tasks:
-                LoginManager.getInstance().logOut();
-                AccessToken.setCurrentAccessToken(null);
+                Commons.facebookLogOut(MainActivity.this);
                 return true;
 
             default:
